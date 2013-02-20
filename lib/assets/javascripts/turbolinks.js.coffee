@@ -253,4 +253,12 @@ requestMethodIsSafe =
 initializeTurbolinks() if browserSupportsPushState and browserIsntBuggy and requestMethodIsSafe
 
 # Call Turbolinks.visit(url) from client code
-@Turbolinks = { visit }
+@Turbolinks = {
+  visit,
+  browserCompatibleDocumentParser,
+  triggerEvent,
+  changePage,	
+  extractTitleAndBody,
+  reflectRedirectedUrl,	
+  resetScrollPosition
+}
