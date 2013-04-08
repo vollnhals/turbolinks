@@ -13,7 +13,7 @@ How much faster is it really?
 
 It depends. The more CSS and JavaScript you have, the bigger the benefit of not throwing away the browser instance and recompiling all of it for every page. Just like a CGI script that says "hello world" will be fast, but a CGI script loading Rails on every request will not.
 
-In any case, the benefit ranges from [twice as fast](https://github.com/steveklabnik/turbolinks_test) on apps with little JS/CSS, to [three times as fast](https://github.com/steveklabnik/turbolinks_test/tree/all_the_assets) in apps with lots of it. Of course, your mileage may vary, be dependent on your browser version, the moon cycle, and all other factors affecting performance testing. But at least it's a yardstick.
+In any case, the benefit can be up to [twice as fast](https://github.com/steveklabnik/turbolinks_test/tree/all_the_assets) in apps with lots of JS and CSS. Of course, your mileage may vary, be dependent on your browser version, the moon cycle, and all other factors affecting performance testing. But at least it's a yardstick.
 
 The best way to find out just how fast it is? Try it on your own application. It hardly takes any effort at all.
 
@@ -33,6 +33,7 @@ Since pages will change without a full reload with Turbolinks, you can't by defa
 * `page:load`    fetched page is being retrieved fresh from the server.
 * `page:restore` fetched page is being retrieved from the 10-slot client-side cache.
 * `page:change`  page has changed to the newly fetched version.
+* `page:receive` page has been fetched from the server, but not yet parsed.
 
 So if you wanted to have a client-side spinner, you could listen for `page:fetch` to start it and `page:change` to stop it. If you have DOM transformation that are not idempotent (the best way), you can hook them to happen only on `page:load` instead of `page:change` (as that would run them again on the cached pages).
 
@@ -92,6 +93,7 @@ Evaluating script tags
 
 Turbolinks will evaluate any script tags in pages it visit, if those tags do not have a type or if the type is text/javascript. All other script tags will be ignored.
 
+As a rule of thumb when switching to Turbolinks, move all of your javascript tags inside the `head` and then work backwards, only moving javascript code back to the body if absolutely necessary.
 
 Triggering a Turbolinks visit manually
 ---------------------------------------
@@ -110,7 +112,7 @@ Compatibility
 
 Turbolinks is designed to work with any browser that fully supports pushState and all the related APIs. This includes Safari 6.0+ (but not Safari 5.1.x!), IE10, and latest Chromes and Firefoxes.
 
-Do note that existing JavaScript libraries may not all be compatible with Turbolinks out of the box due to the change in instantiation cycle. You might very well have to modify them to work with Turbolinks' new set of events.  For help with this, check out the [Turbolinks Compatibility](http://reednj77.github.com/turbolinks-compatibility) project.
+Do note that existing JavaScript libraries may not all be compatible with Turbolinks out of the box due to the change in instantiation cycle. You might very well have to modify them to work with Turbolinks' new set of events.  For help with this, check out the [Turbolinks Compatibility](http://reed.github.com/turbolinks-compatibility) project.
 
 
 Installation

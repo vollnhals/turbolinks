@@ -29,9 +29,9 @@ fetchReplacement = (url) ->
   xhr.setRequestHeader 'X-XHR-Referer', referer
 
   xhr.onload = =>
-    doc = createDocument xhr.responseText
-
-    if assetsChanged doc
+    triggerEvent 'page:receive'
+    
+    if invalidContent(xhr) or assetsChanged (doc = createDocument xhr.responseText)
       document.location.reload()
     else
       changePage extractTitleAndBody(doc)...
@@ -85,7 +85,8 @@ changePage = (title, body, runScripts) ->
   triggerEvent 'page:change'
 
 executeScriptTags = ->
-  for script in document.body.getElementsByTagName 'script' when script.type in ['', 'text/javascript']
+  scripts = Array::slice.call document.body.getElementsByTagName 'script'
+  for script in scripts when script.type in ['', 'text/javascript']
     copy = document.createElement 'script'
     copy.setAttribute attr.name, attr.value for attr in script.attributes
     copy.appendChild document.createTextNode script.innerHTML
@@ -139,6 +140,9 @@ triggerEvent = (name) ->
   document.dispatchEvent event
 
 
+invalidContent = (xhr) ->
+  !xhr.getResponseHeader('Content-Type').match /^(?:text\/html|application\/xhtml\+xml|application\/xml)(?:;|$)/
+
 extractTrackAssets = (doc) ->
   (node.src || node.href) for node in doc.head.childNodes when node.getAttribute?('data-turbolinks-track')?
 
@@ -171,11 +175,11 @@ browserCompatibleDocumentParser = ->
     doc.close()
     doc
 
-  # Use createDocumentUsingParser if DOMParser is defined and natively 
+  # Use createDocumentUsingParser if DOMParser is defined and natively
   # supports 'text/html' parsing (Firefox 12+, IE 10)
   #
   # Use createDocumentUsingDOM if createDocumentUsingParser throws an exception
-  # due to unsupported type 'text/html' (Firefox < 12, Opera)  
+  # due to unsupported type 'text/html' (Firefox < 12, Opera)
   #
   # Use createDocumentUsingWrite if:
   #  - DOMParser isn't defined
@@ -195,8 +199,8 @@ browserCompatibleDocumentParser = ->
 
 installClickHandlerLast = (event) ->
   unless event.defaultPrevented
-    document.removeEventListener 'click', handleClick
-    document.addEventListener 'click', handleClick
+    document.removeEventListener 'click', handleClick, false
+    document.addEventListener 'click', handleClick, false
 
 handleClick = (event) ->
   unless event.defaultPrevented
@@ -219,7 +223,8 @@ anchoredLink = (link) ->
     (link.href is location.href + '#')
 
 nonHtmlLink = (link) ->
-  link.href.match(/\.[a-z]+(\?.*)?$/g) and not link.href.match(/\.html?(\?.*)?$/g)
+  url = removeHash link
+  url.match(/\.[a-z]+(\?.*)?$/g) and not url.match(/\.html?(\?.*)?$/g)
 
 noTurbolink = (link) ->
   until ignore or link is document
@@ -241,6 +246,7 @@ initializeTurbolinks = ->
   document.addEventListener 'click', installClickHandlerLast, true
   window.addEventListener 'popstate', (event) ->
     fetchHistory event.state if event.state?.turbolinks
+  , false
 
 browserSupportsPushState =
   window.history and window.history.pushState and window.history.replaceState and window.history.state != undefined
