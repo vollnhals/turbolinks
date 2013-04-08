@@ -260,6 +260,7 @@ initializeTurbolinks() if browserSupportsPushState and browserIsntBuggy and requ
   triggerEvent,
   changePage,	
   extractTitleAndBody,
+  reflectNewUrl,
   reflectRedirectedUrl,	
   resetScrollPosition
 }
